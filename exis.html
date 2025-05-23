@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Existence Task - 実存タスク</title>
+    <style>
+        /* デザインシステム - 変数定義 */
+        :root {
+            /* 基本の虚無カラー */
+            --void-black: #0a0a0a;
+            --void-gray-dark: #1a1a1a;
+            --void-gray: #2a2a2a;
+            --void-gray-light: #4a4a4a;
+            
+            /* テキスト */
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            
+            /* アクセント（選択の瞬間） */
+            --choice-blue: #4a9eff;
+            --freedom-green: #4aff9e;
+            --warning-red: #ff4a4a;
+            --creative-yellow: #ffd700;
+            
+            /* 透明度 */
+            --opacity-hover: 0.8;
+            --opacity-disabled: 0.3;
+            
+            /* フォント */
+            --font-main: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            --font-mono: 'Monaco', 'Courier New', monospace;
+            
+            /* サイズ */
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.25rem;
+            --text-xl: 1.5rem;
+            --text-2xl: 2rem;
+            
+            /* 行間 */
+            --leading-tight: 1.25;
+            --leading-normal: 1.5;
+            --leading-relaxed: 1.75;
+            
+            /* 余白 */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+        }
+        
+        /* リセット & ベース */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-main);
+            background: var(--void-black);
+            color: var(--text-primary);
+            line-height: var(--leading-normal);
+            font-size: var(--text-base);
+            min-height: 100vh;
+        }
+        
+        /* メインコンテナ */
+        .app-container {
+            min-height: 100vh;
+            padding: var(--space-6);
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        
+        /* ヘッダー */
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-12);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .header h1 {
+            font-size: var(--text-2xl);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-2);
+        }
+        
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+        }
+        
+        /* 気分フィルター */
+        .mood-filter {
+            margin-bottom: var(--space-8);
+            animation: fadeIn 1s ease-out 0.2s both;
+        }
+        
+        .mood-options {
+            display: flex;
+            gap: var(--space-2);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .mood-btn {
+            background: transparent;
+            border: 1px solid var(--void-gray-light);
+            color: var(--text-secondary);
+            padding: var(--space-2) var(--space-4);
+            border-radius: 20px;
+            font-size: var(--text-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .mood-btn:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+        
+        .mood-btn.active {
+            background: var(--choice-blue);
+            border-color: var(--choice-blue);
+            color: var(--void-black);
+        }
+        
+        /* セクション */
+        .section {
+            margin-bottom: var(--space-12);
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+        
+        .section-title {
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-4);
+            font-weight: 400;
+        }
+        
+        /* タスクリスト */
+        .task-list {
+            margin-bottom: var(--space-4);
+        }
+        
+        /* タスクカード */
+        .task-card {
+            background: var(--void-gray);
+            border: 1px solid var(--void-gray-light);
+            border-radius: 12px;
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .task-card:hover {
+            transform: translateX(4px);
+            border-color: var(--text-secondary);
+        }
+        
+        .task-card.obligation {
+            border-color: var(--warning-red);
+            background: rgba(255, 74, 74, 0.1);
+        }
+        
+        .task-card.stale {
+            opacity: 0.6;
+            filter: grayscale(50%);
+        }
+        
+        .task-content {
+            font-size: var(--text-base);
+            margin-bottom: var(--space-2);
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-3);
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        /* ボタン */
+        .btn-primary {
+            background: var(--choice-blue);
+            color: var(--void-black);
+            padding: var(--space-3) var(--space-6);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            opacity: var(--opacity-hover);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: var(--space-3) var(--space-6);
+            border: 1px solid var(--void-gray-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+        
+        .btn-freedom {
+            background: transparent;
+            border: 2px solid var(--freedom-green);
+            color: var(--freedom-green);
+            padding: var(--space-3) var(--space-6);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-freedom:hover {
+            background: var(--freedom-green);
+            color: var(--void-black);
+        }
+        
+        .btn-reset {
+            background: transparent;
+            color: var(--text-muted);
+            font-size: var(--text-sm);
+            text-decoration: underline;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-reset:hover {
+            color: var(--text-secondary);
+        }
+        
+        .add-task-btn {
+            width: 100%;
+            padding: var(--space-4);
+            font-size: var(--text-base);
+        }
+        
+        /* フォーム要素 */
+        .input-field, .textarea-field {
+            width: 100%;
+            background: var(--void-gray-dark);
+            border: 1px solid var(--void-gray-light);
+            color: var(--text-primary);
+            padding: var(--space-3);
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-size: var(--text-base);
+            transition: all 0.2s ease;
+        }
+        
+        .input-field:focus, .textarea-field:focus {
+            outline: none;
+            border-color: var(--choice-blue);
+        }
+        
+        .textarea-field {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* タグ */
+        .emotion-tag {
+            display: inline-block;
+            padding: var(--space-1) var(--space-3);
+            background: var(--void-gray-light);
+            color: var(--text-secondary);
+            border-radius: 20px;
+            font-size: var(--text-sm);
+            margin: var(--space-1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .emotion-tag:hover {
+            background: var(--void-gray);
+            color: var(--text-primary);
+        }
+        
+        .emotion-tag.selected {
+            background: var(--choice-blue);
+            color: var(--void-black);
+        }
+        
+        .emotion-tags {
+            margin-top: var(--space-3);
+        }
+        
+        /* スライダー */
+        .slider-group {
+            margin-bottom: var(--space-4);
+        }
+        
+        .slider-group label {
+            display: block;
+            margin-bottom: var(--space-2);
+            color: var(--text-secondary);
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            margin-bottom: var(--space-1);
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            background: var(--void-gray-light);
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: grab;
+            -webkit-appearance: none;
+            transition: all 0.2s ease;
+        }
+        
+        .slider:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.2);
+            background: var(--choice-blue);
+        }
+        
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: var(--void-gray-dark);
+            border: 1px solid var(--void-gray-light);
+            border-radius: 16px;
+            padding: var(--space-8);
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .modal-content h3 {
+            font-size: var(--text-xl);
+            font-weight: 400;
+            margin-bottom: var(--space-6);
+            text-align: center;
+        }
+        
+        .modal-step {
+            margin-bottom: var(--space-6);
+        }
+        
+        .modal-step label {
+            display: block;
+            margin-bottom: var(--space-3);
+            color: var(--text-secondary);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: var(--space-3);
+            justify-content: center;
+            margin-top: var(--space-6);
+        }
+        
+        /* フッター */
+        .footer {
+            text-align: center;
+            padding: var(--space-8) 0;
+        }
+        
+        /* アニメーション */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 640px) {
+            .app-container {
+                padding: var(--space-4);
+            }
+            
+            .header h1 {
+                font-size: var(--text-xl);
+            }
+            
+            .mood-options {
+                justify-content: flex-start;
+            }
+            
+            .modal-content {
+                padding: var(--space-6);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- メインコンテナ -->
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <h1>Existence Task</h1>
+            <p class="subtitle">すべては無意味。だから選ぶ。</p>
+        </header>
+
+        <!-- 気分フィルター -->
+        <section class="mood-filter">
+            <div class="mood-options">
+                <button class="mood-btn" data-mood="all">すべて</button>
+                <button class="mood-btn" data-mood="curiosity">好奇心・実験的</button>
+                <button class="mood-btn" data-mood="playful">遊び心</button>
+                <button class="mood-btn" data-mood="creative">創造的</button>
+                <button class="mood-btn" data-mood="destructive">破壊的</button>
+                <button class="mood-btn" data-mood="obligation">義務感</button>
+            </div>
+        </section>
+
+        <!-- メインコンテンツ -->
+        <main>
+            <!-- アクティブなタスク -->
+            <section class="section active-tasks">
+                <h2 class="section-title">今日の実験場</h2>
+                <div id="taskList" class="task-list">
+                    <!-- タスクカードがここに追加される -->
+                </div>
+                <button id="addTaskBtn" class="btn-primary add-task-btn">
+                    ＋ 新たな無意味を選ぶ
+                </button>
+            </section>
+
+            <!-- やらなかったタスク -->
+            <section class="section not-done-tasks">
+                <h2 class="section-title">選ばなかった自由</h2>
+                <div id="notDoneList" class="task-list">
+                    <!-- やらなかったタスクがここに表示される -->
+                </div>
+            </section>
+        </main>
+
+        <!-- フッター -->
+        <footer class="footer">
+            <button id="resetBtn" class="btn-reset">
+                ∞ すべてを無に還す
+            </button>
+        </footer>
+    </div>
+
+    <!-- タスク追加モーダル -->
+    <div id="addTaskModal" class="modal">
+        <div class="modal-content">
+            <h3>また何か選ぶの？</h3>
+            
+            <!-- Step 1: タスク内容 -->
+            <div class="modal-step" data-step="1">
+                <label>無意味なことを書いてみて</label>
+                <input type="text" id="taskContent" class="input-field" placeholder="...">
+            </div>
+
+            <!-- Step 2: 選択の理由 -->
+            <div class="modal-step" data-step="2" style="display: none;">
+                <label>なぜこれを選ぶ？</label>
+                <textarea id="whyChoose" class="textarea-field" placeholder="理由なんてなくてもいいけど..."></textarea>
+                
+                <div class="emotion-tags">
+                    <span class="emotion-tag" data-emotion="curiosity">好奇心・実験的</span>
+                    <span class="emotion-tag" data-emotion="playfulness">遊び心</span>
+                    <span class="emotion-tag" data-emotion="creative">創造的</span>
+                    <span class="emotion-tag" data-emotion="destructive">破壊的</span>
+                    <span class="emotion-tag" data-emotion="obligation">義務感</span>
+                    <span class="emotion-tag" data-emotion="anxiety">不安</span>
+                </div>
+            </div>
+
+            <!-- Step 3: 体験予測 -->
+            <div class="modal-step" data-step="3" style="display: none;">
+                <div class="slider-group">
+                    <label>没頭度</label>
+                    <div class="slider-labels">
+                        <span>時間を忘れそう</span>
+                        <span>苦痛</span>
+                    </div>
+                    <input type="range" id="immersionSlider" class="slider" min="0" max="100" value="50">
+                </div>
+
+                <div class="slider-group">
+                    <label>自己一致度</label>
+                    <div class="slider-labels">
+                        <span>本当にやりたい</span>
+                        <span>やらされ感</span>
+                    </div>
+                    <input type="range" id="authenticitySlider" class="slider" min="0" max="100" value="50">
+                </div>
+
+                <div class="slider-group">
+                    <label>実験度</label>
+                    <div class="slider-labels">
+                        <span>新しい体験</span>
+                        <span>ルーティン</span>
+                    </div>
+                    <input type="range" id="experimentSlider" class="slider" min="0" max="100" value="50">
+                </div>
+
+                <div class="slider-group">
+                    <label>意味創造度</label>
+                    <div class="slider-labels">
+                        <span>何か生まれそう</span>
+                        <span>消費的</span>
+                    </div>
+                    <input type="range" id="creationSlider" class="slider" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- モーダルボタン -->
+            <div class="modal-actions">
+                <button id="modalCancel" class="btn-secondary">やめる</button>
+                <button id="modalNext" class="btn-primary">次へ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- やらない理由モーダル -->
+    <div id="notDoneModal" class="modal">
+        <div class="modal-content">
+            <h3>解放される準備はできた？</h3>
+            <textarea id="whyNotChoose" class="textarea-field" placeholder="なぜやらない？"></textarea>
+            
+            <div class="slider-group">
+                <label>解放感</label>
+                <input type="range" id="liberationSlider" class="slider" min="0" max="100" value="50">
+            </div>
+
+            <div class="modal-actions">
+                <button id="notDoneCancel" class="btn-secondary">戻る</button>
+                <button id="notDoneConfirm" class="btn-freedom">解放する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 振り返りモーダル -->
+    <div id="reflectionModal" class="modal">
+        <div class="modal-content">
+            <h3>実験完了</h3>
+            
+            <div class="prediction-vs-reality">
+                <!-- 予測と現実の比較がここに表示される -->
+            </div>
+
+            <div class="reflection-questions">
+                <label>実際どうだった？</label>
+                <textarea id="howWasIt" class="textarea-field" placeholder="..."></textarea>
+                
+                <label>また選ぶ？</label>
+                <div class="choice-buttons">
+                    <button class="choice-btn" data-choice="yes">はい</button>
+                    <button class="choice-btn" data-choice="no">いいえ</button>
+                    <button class="choice-btn" data-choice="maybe">たぶん</button>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="reflectionCancel" class="btn-secondary">やめる</button>
+                <button id="reflectionComplete" class="btn-primary">忘却の彼方へ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // アプリケーションの状態管理
+        const app = {
+            tasks: [],
+            notDoneTasks: [],
+            currentMood: 'all',
+            currentTaskData: {},
+            currentModalStep: 1
+        };
+
+        // DOM要素の取得
+        const elements = {
+            taskList: document.getElementById('taskList'),
+            notDoneList: document.getElementById('notDoneList'),
+            addTaskBtn: document.getElementById('addTaskBtn'),
+            addTaskModal: document.getElementById('addTaskModal'),
+            modalNext: document.getElementById('modalNext'),
+            modalCancel: document.getElementById('modalCancel'),
+            taskContent: document.getElementById('taskContent'),
+            whyChoose: document.getElementById('whyChoose'),
+            immersionSlider: document.getElementById('immersionSlider'),
+            authenticitySlider: document.getElementById('authenticitySlider'),
+            experimentSlider: document.getElementById('experimentSlider'),
+            creationSlider: document.getElementById('creationSlider'),
+            moodBtns: document.querySelectorAll('.mood-btn'),
+            emotionTags: document.querySelectorAll('.emotion-tag'),
+            // 新しい要素
+            notDoneModal: document.getElementById('notDoneModal'),
+            whyNotChoose: document.getElementById('whyNotChoose'),
+            liberationSlider: document.getElementById('liberationSlider'),
+            notDoneCancel: document.getElementById('notDoneCancel'),
+            notDoneConfirm: document.getElementById('notDoneConfirm'),
+            reflectionModal: document.getElementById('reflectionModal'),
+            howWasIt: document.getElementById('howWasIt'),
+            reflectionComplete: document.getElementById('reflectionComplete'),
+            reflectionCancel: document.getElementById('reflectionCancel')
+        };
+
+        // ユーティリティ関数
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Claude.ai環境ではlocalStorageが使えないため、メモリ内でのみデータを保持
+        function saveToLocalStorage() {
+    try {
+        localStorage.setItem('existenceTaskApp', JSON.stringify({
+            tasks: app.tasks,
+            notDoneTasks: app.notDoneTasks
+        }));
+        console.log('データを保存しました');
+    } catch (error) {
+        console.error('データ保存に失敗しました:', error);
+    }
+}
+
+
+function loadFromLocalStorage() {
+    try {
+        const saved = localStorage.getItem('existenceTaskApp');
+        if (saved) {
+            const data = JSON.parse(saved);
+            app.tasks = data.tasks || [];
+            app.notDoneTasks = data.notDoneTasks || [];
+            console.log('データを読み込みました');
+        } else {
+            // 初回起動時のサンプルデータ
+            app.tasks = [
+                {
+                    id: generateId(),
+                    content: "ニーチェを読む",
+                    whyChoose: "虚無と踊るため",
+                    emotionTags: ['curiosity', 'playfulness'],
+                    predictions: {
+                        immersion: 80,
+                        authenticity: 90,
+                        experimentation: 70,
+                        creation: 85
+                    },
+                    createdAt: new Date().toISOString(),
+                    status: 'active',
+                    guideline: null,
+                    absurdityLevel: 95,
+                    playfulness: 80
+                }
+            ];
+        }
+    } catch (error) {
+        console.error('データ読み込みに失敗しました:', error);
+        app.tasks = [];
+        app.notDoneTasks = [];
+    }
+}
+
+
+        // モーダル制御
+        function openModal(modalElement) {
+            modalElement.classList.add('active');
+            app.currentModalStep = 1;
+            showModalStep(1);
+        }
+
+        function closeModal(modalElement) {
+            modalElement.classList.remove('active');
+            resetModalForm();
+        }
+
+        function showModalStep(step) {
+            document.querySelectorAll('.modal-step').forEach(s => {
+                s.style.display = 'none';
+            });
+            document.querySelector(`[data-step="${step}"]`).style.display = 'block';
+            
+            // ボタンのテキストを更新
+            if (step === 3) {
+                elements.modalNext.textContent = '選ぶ';
+            } else {
+                elements.modalNext.textContent = '次へ';
+            }
+        }
+
+        function resetModalForm() {
+            elements.taskContent.value = '';
+            elements.whyChoose.value = '';
+            elements.emotionTags.forEach(tag => tag.classList.remove('selected'));
+            elements.immersionSlider.value = 50;
+            elements.authenticitySlider.value = 50;
+            elements.experimentSlider.value = 50;
+            elements.creationSlider.value = 50;
+            app.currentTaskData = {};
+        }
+
+        // タスク作成
+        function createTask() {
+            const selectedTags = Array.from(elements.emotionTags)
+                .filter(tag => tag.classList.contains('selected'))
+                .map(tag => tag.dataset.emotion);
+
+            const task = {
+                id: generateId(),
+                content: app.currentTaskData.content,
+                whyChoose: app.currentTaskData.whyChoose,
+                emotionTags: selectedTags,
+                predictions: {
+                    immersion: parseInt(elements.immersionSlider.value),
+                    authenticity: parseInt(elements.authenticitySlider.value),
+                    experimentation: parseInt(elements.experimentSlider.value),
+                    creation: parseInt(elements.creationSlider.value)
+                },
+                createdAt: new Date().toISOString(),
+                status: 'active',
+                guideline: null,
+                absurdityLevel: Math.floor(Math.random() * 100), // ランダムな馬鹿馬鹿しさ
+                playfulness: selectedTags.includes('playfulness') ? 80 : 40
+            };
+
+            app.tasks.push(task);
+            saveToLocalStorage();
+            renderTasks();
+            closeModal(elements.addTaskModal);
+        }
+
+        // タスクのレンダリング
+        function renderTasks() {
+            elements.taskList.innerHTML = '';
+            
+            const filteredTasks = app.currentMood === 'all' 
+                ? app.tasks.filter(t => t.status === 'active')
+                : app.tasks.filter(t => {
+                    if (t.status !== 'active') return false;
+                    
+                    // 感情タグでフィルタリング
+                    if (app.currentMood === 'curiosity') return t.emotionTags.includes('curiosity');
+                    if (app.currentMood === 'playful') return t.emotionTags.includes('playfulness');
+                    if (app.currentMood === 'creative') return t.emotionTags.includes('creative');
+                    if (app.currentMood === 'destructive') return t.emotionTags.includes('destructive');
+                    if (app.currentMood === 'obligation') return t.emotionTags.includes('obligation');
+                    return true;
+                });
+
+            filteredTasks.forEach(task => {
+                const taskCard = createTaskCard(task);
+                elements.taskList.appendChild(taskCard);
+            });
+
+            if (filteredTasks.length === 0) {
+                elements.taskList.innerHTML = '<p class="empty-message">無が広がっている...</p>';
+            }
+        }
+
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            
+            // 義務感タスクの判定
+            if (task.emotionTags.includes('obligation') || task.predictions.authenticity < 30) {
+                card.classList.add('obligation');
+            }
+            
+            // 長期滞留の判定（7日以上）
+            const createdDate = new Date(task.createdAt);
+            const daysPassed = Math.floor((new Date() - createdDate) / (1000 * 60 * 60 * 24));
+            if (daysPassed > 7) {
+                card.classList.add('stale');
+            }
+
+            card.innerHTML = `
+                <div class="task-content">${task.content}</div>
+                <div class="task-reason">"${task.whyChoose || '理由なく、ただ選んだ'}"</div>
+                <div class="task-meta">
+                    ${task.emotionTags.map(tag => 
+                        `<span class="emotion-tag selected">${getEmotionLabel(tag)}</span>`
+                    ).join('')}
+                </div>
+                <div class="task-actions">
+                    <button class="btn-secondary" onclick="completeTask('${task.id}')">完了</button>
+                    <button class="btn-freedom" onclick="notDoTask('${task.id}')">やらない</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function getEmotionLabel(emotion) {
+            const labels = {
+                curiosity: '好奇心・実験的',
+                playfulness: '遊び心',
+                creative: '創造的',
+                destructive: '破壊的',
+                obligation: '義務感',
+                anxiety: '不安'
+            };
+            return labels[emotion] || emotion;
+        }
+
+        // イベントリスナー
+        elements.addTaskBtn.addEventListener('click', () => {
+            openModal(elements.addTaskModal);
+        });
+
+        elements.modalCancel.addEventListener('click', () => {
+            closeModal(elements.addTaskModal);
+        });
+
+        elements.modalNext.addEventListener('click', () => {
+            if (app.currentModalStep === 1) {
+                if (!elements.taskContent.value.trim()) {
+                    elements.taskContent.focus();
+                    return;
+                }
+                app.currentTaskData.content = elements.taskContent.value;
+                app.currentModalStep = 2;
+                showModalStep(2);
+            } else if (app.currentModalStep === 2) {
+                app.currentTaskData.whyChoose = elements.whyChoose.value;
+                app.currentModalStep = 3;
+                showModalStep(3);
+            } else if (app.currentModalStep === 3) {
+                createTask();
+            }
+        });
+
+        // 感情タグの選択
+        elements.emotionTags.forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('selected');
+            });
+        });
+
+        // 気分フィルター
+        elements.moodBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                elements.moodBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                app.currentMood = btn.dataset.mood;
+                renderTasks();
+            });
+        });
+
+        // Enterキーでの進行
+        elements.taskContent.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && app.currentModalStep === 1) {
+                elements.modalNext.click();
+            }
+        });
+
+        // 仮の関数（Part2で実装）
+        function completeTask(taskId) {
+            const task = app.tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            // 振り返りモーダルを開く
+            app.currentTaskData = task;
+            openReflectionModal(task);
+        }
+
+        function notDoTask(taskId) {
+            const task = app.tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            // 現在のタスクを保存
+            app.currentTaskData = task;
+            
+            // やらない理由モーダルを開く
+            elements.notDoneModal.classList.add('active');
+            elements.whyNotChoose.focus();
+        }
+
+        // やらない機能の実装
+        function confirmNotDone() {
+            const task = app.currentTaskData;
+            
+            const notDoneTask = {
+                id: generateId(),
+                originalTask: task,
+                whyNotChoose: elements.whyNotChoose.value,
+                liberationFeeling: parseInt(elements.liberationSlider.value),
+                notDoneAt: new Date().toISOString()
+            };
+            
+            // タスクを移動
+            app.tasks = app.tasks.filter(t => t.id !== task.id);
+            app.notDoneTasks.push(notDoneTask);
+            
+            saveToLocalStorage();
+            renderTasks();
+            renderNotDoneTasks();
+            
+            // モーダルを閉じる
+            closeModal(elements.notDoneModal);
+            resetNotDoneModal();
+            
+            // 解放のフィードバック
+            showLiberationFeedback(notDoneTask.liberationFeeling);
+        }
+
+        function resetNotDoneModal() {
+            elements.whyNotChoose.value = '';
+            elements.liberationSlider.value = 50;
+        }
+
+        function showLiberationFeedback(liberationLevel) {
+            const message = liberationLevel > 70 
+                ? '自由になった...' 
+                : liberationLevel > 40 
+                ? 'ひとつ手放した' 
+                : 'それでいい';
+                
+            const feedback = document.createElement('div');
+            feedback.className = 'liberation-feedback';
+            feedback.textContent = message;
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => {
+                feedback.remove();
+            }, 3000);
+        }
+
+        // やらなかったタスクのレンダリング
+        function renderNotDoneTasks() {
+            elements.notDoneList.innerHTML = '';
+            
+            app.notDoneTasks.forEach(notDone => {
+                const card = createNotDoneCard(notDone);
+                elements.notDoneList.appendChild(card);
+            });
+            
+            if (app.notDoneTasks.length === 0) {
+                elements.notDoneList.innerHTML = '<p class="empty-message">まだ何も手放していない...</p>';
+            }
+        }
+
+        function createNotDoneCard(notDone) {
+            const card = document.createElement('div');
+            card.className = 'task-card not-done-card';
+            
+            card.innerHTML = `
+                <div class="task-content">${notDone.originalTask.content}</div>
+                <div class="not-done-reason">「${notDone.whyNotChoose || '理由なく、ただ手放した'}」</div>
+                <div class="liberation-meter">
+                    <span>解放感: </span>
+                    <div class="liberation-bar" style="width: ${notDone.liberationFeeling}%"></div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // 振り返り機能
+        function openReflectionModal(task) {
+            elements.reflectionModal.classList.add('active');
+            
+            // 予測と現実の比較を表示（簡易版）
+            const comparisonHTML = `
+                <div class="comparison">
+                    <h4>実験の結果</h4>
+                    <p class="task-title">${task.content}</p>
+                    <p class="emotion-summary">感じていたこと: ${task.emotionTags.map(e => getEmotionLabel(e)).join(', ') || 'なし'}</p>
+                </div>
+            `;
+            
+            document.querySelector('.prediction-vs-reality').innerHTML = comparisonHTML;
+            elements.howWasIt.focus();
+        }
+
+        function completeReflection() {
+            const task = app.currentTaskData;
+            
+            // タスクを完了状態に
+            const taskIndex = app.tasks.findIndex(t => t.id === task.id);
+            if (taskIndex > -1) {
+                app.tasks[taskIndex].status = 'completed';
+                app.tasks[taskIndex].reflection = {
+                    howWasIt: elements.howWasIt.value,
+                    completedAt: new Date().toISOString()
+                };
+            }
+            
+            saveToLocalStorage();
+            renderTasks();
+            
+            // モーダルを閉じる
+            closeModal(elements.reflectionModal);
+            resetReflectionModal();
+            
+            // 完了フィードバック
+            showCompletionFeedback();
+        }
+
+        function resetReflectionModal() {
+            elements.howWasIt.value = '';
+            document.querySelectorAll('.choice-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+        }
+
+        function showCompletionFeedback() {
+            const feedback = document.createElement('div');
+            feedback.className = 'completion-feedback';
+            feedback.textContent = '忘却の彼方へ...';
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => {
+                feedback.remove();
+            }, 3000);
+        }
+
+        // イベントリスナーの追加
+        elements.notDoneCancel.addEventListener('click', () => {
+            closeModal(elements.notDoneModal);
+            resetNotDoneModal();
+        });
+
+        elements.notDoneConfirm.addEventListener('click', confirmNotDone);
+
+        elements.reflectionComplete.addEventListener('click', completeReflection);
+        
+        elements.reflectionCancel.addEventListener('click', () => {
+            closeModal(elements.reflectionModal);
+            resetReflectionModal();
+        });
+
+        // 選択ボタンのイベント
+        document.querySelectorAll('.choice-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            });
+        });
+
+        // リセット機能
+        function resetAll() {
+            if (confirm('本当にすべてを無に還しますか？')) {
+                // リセットアニメーション（簡易版）
+                document.querySelectorAll('.task-card').forEach(card => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.8)';
+                });
+                
+                setTimeout(() => {
+                    app.tasks = [];
+                    app.notDoneTasks = [];
+                    saveToLocalStorage();
+                    renderTasks();
+                    renderNotDoneTasks();
+                    
+                    // リセットフィードバック
+                    const feedback = document.createElement('div');
+                    feedback.className = 'completion-feedback';
+                    feedback.textContent = '明日もまた、無意味を創ろう';
+                    document.body.appendChild(feedback);
+                    
+                    setTimeout(() => {
+                        feedback.remove();
+                    }, 3000);
+                }, 500);
+            }
+        }
+
+        // リセットボタンのイベントリスナー
+        document.getElementById('resetBtn').addEventListener('click', resetAll);
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            renderTasks();
+            renderNotDoneTasks();
+            
+            // 最初の気分ボタンをアクティブに
+            elements.moodBtns[0].classList.add('active');
+        });
+
+        // CSSを追加（空メッセージ用）
+        const style = document.createElement('style');
+        style.textContent = `
+            .empty-message {
+                text-align: center;
+                color: var(--text-muted);
+                padding: var(--space-8);
+                font-style: italic;
+            }
+            
+            /* タスクの理由表示 */
+            .task-reason {
+                color: var(--text-muted);
+                font-size: var(--text-sm);
+                font-style: italic;
+                margin: var(--space-2) 0;
+                opacity: 0.7;
+            }
+            
+            /* やらなかったタスクカード */
+            .not-done-card {
+                background: rgba(74, 255, 158, 0.05);
+                border-color: var(--freedom-green);
+            }
+            
+            .not-done-reason {
+                color: var(--text-secondary);
+                font-style: italic;
+                margin: var(--space-2) 0;
+                font-size: var(--text-sm);
+            }
+            
+            .liberation-meter {
+                display: flex;
+                align-items: center;
+                gap: var(--space-2);
+                font-size: var(--text-sm);
+                color: var(--text-muted);
+                margin-top: var(--space-2);
+            }
+            
+            .liberation-bar {
+                height: 4px;
+                background: var(--freedom-green);
+                border-radius: 2px;
+                transition: width 0.3s ease;
+            }
+            
+            /* フィードバック */
+            .liberation-feedback,
+            .completion-feedback {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: var(--void-gray-dark);
+                color: var(--text-primary);
+                padding: var(--space-6) var(--space-8);
+                border-radius: 12px;
+                font-size: var(--text-lg);
+                animation: fadeInOut 3s ease;
+                pointer-events: none;
+                z-index: 2000;
+            }
+            
+            .liberation-feedback {
+                color: var(--freedom-green);
+                border: 1px solid var(--freedom-green);
+            }
+            
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translate(-50%, -40%); }
+                20% { opacity: 1; transform: translate(-50%, -50%); }
+                80% { opacity: 1; transform: translate(-50%, -50%); }
+                100% { opacity: 0; transform: translate(-50%, -60%); }
+            }
+            
+            /* 振り返りモーダル */
+            .comparison {
+                background: var(--void-gray);
+                padding: var(--space-4);
+                border-radius: 8px;
+                margin-bottom: var(--space-4);
+            }
+            
+            .comparison h4 {
+                color: var(--text-secondary);
+                font-weight: 400;
+                margin-bottom: var(--space-2);
+            }
+            
+            .task-title {
+                font-size: var(--text-lg);
+                margin-bottom: var(--space-2);
+            }
+            
+            .emotion-summary {
+                color: var(--text-muted);
+                font-size: var(--text-sm);
+            }
+            
+            .choice-buttons {
+                display: flex;
+                gap: var(--space-2);
+                margin-top: var(--space-3);
+            }
+            
+            .choice-btn {
+                flex: 1;
+                padding: var(--space-2) var(--space-3);
+                background: var(--void-gray);
+                border: 1px solid var(--void-gray-light);
+                color: var(--text-secondary);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .choice-btn:hover {
+                border-color: var(--text-secondary);
+                color: var(--text-primary);
+            }
+            
+            .choice-btn.selected {
+                background: var(--choice-blue);
+                border-color: var(--choice-blue);
+                color: var(--void-black);
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
